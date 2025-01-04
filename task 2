@@ -1,0 +1,138 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <string>
+#include <limits> // For input validation
+
+using namespace std;
+
+// Player stats
+struct Player {
+    string name;
+    int health;
+    int gold;
+    int score;
+};
+
+// Enemy stats
+struct Enemy {
+    string type;
+    int health;
+    int damage;
+};
+
+// Function to display player stats
+void displayStats(const Player &player) {
+    cout << "---------------------\n";
+    cout << "Name: " << player.name << "\n";
+    cout << "Health: " << player.health << "\n";
+    cout << "Gold: " << player.gold << "\n";
+    cout << "Score: " << player.score << "\n";
+    cout << "---------------------\n";
+}
+
+// Function for a combat encounter
+bool combat(Player &player, Enemy &enemy) {
+    cout << "\nA wild " << enemy.type << " appears!\n";
+    while (enemy.health > 0 && player.health > 0) {
+        cout << "Enemy Health: " << enemy.health << "\n";
+        cout << "1. Attack\n2. Run\n";
+        int choice;
+        cin >> choice;
+
+        // Validate input
+        while (cin.fail() || (choice != 1 && choice != 2)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input! Choose 1 to Attack or 2 to Run: ";
+            cin >> choice;
+        }
+
+        if (choice == 1) {
+            int damage = rand() % 10 + 5; // Player deals random damage
+            cout << "You hit the " << enemy.type << " for " << damage << " damage!\n";
+            enemy.health -= damage;
+
+            if (enemy.health > 0) {
+                cout << "The " << enemy.type << " hits you for " << enemy.damage << " damage!\n";
+                player.health -= enemy.damage;
+            }
+        } else {
+            cout << "You escaped successfully!\n";
+            return false;
+        }
+    }
+
+    if (player.health > 0) {
+        cout << "You defeated the " << enemy.type << "!\n";
+        player.gold += rand() % 20 + 10;  // Gain random gold
+        player.score += 10;              // Gain score
+        return true;
+    } else {
+        cout << "You were defeated by the " << enemy.type << "...\n";
+        return false;
+    }
+}
+
+int main() {
+    srand(static_cast<unsigned>(time(0))); // Seed random number generator
+
+    // Initialize player
+    Player player;
+    cout << "Enter your character's name: ";
+    cin >> player.name;
+    player.health = 100;
+    player.gold = 0;
+    player.score = 0;
+
+    cout << "\nWelcome, " << player.name << "! Your adventure begins...\n";
+
+    // Game loop
+    while (player.health > 0) {
+        cout << "\nChoose an action:\n";
+        cout << "1. Explore\n2. Check Stats\n3. Quit\n";
+        int choice;
+        cin >> choice;
+
+        // Validate input
+        while (cin.fail() || (choice < 1 || choice > 3)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input! Choose 1 to Explore, 2 to Check Stats, or 3 to Quit: ";
+            cin >> choice;
+        }
+
+        if (choice == 1) {
+            // Random encounter
+            int encounter = rand() % 2;
+            if (encounter == 0) {
+                // Enemy encounter
+                Enemy enemy;
+                enemy.type = "Goblin";
+                enemy.health = rand() % 30 + 20;
+                enemy.damage = rand() % 10 + 5;
+
+                if (!combat(player, enemy)) {
+                    break; // End game if player dies
+                }
+            } else {
+                // Treasure encounter
+                int treasure = rand() % 50 + 10;
+                cout << "You found a treasure chest with " << treasure << " gold!\n";
+                player.gold += treasure;
+                player.score += 5;
+            }
+        } else if (choice == 2) {
+            displayStats(player);
+        } else if (choice == 3) {
+            cout << "Thanks for playing, " << player.name << "! Final score: " << player.score << "\n";
+            break;
+        }
+    }
+
+    if (player.health <= 0) {
+        cout << "\nGame Over. Final score: " << player.score << "\n";
+    }
+
+    return 0;
+}
